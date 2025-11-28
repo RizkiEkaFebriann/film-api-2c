@@ -132,7 +132,7 @@ app.post('/directors', authenticateToken, async (req, res, next) => {
     if (!name || !birthYear) {
         return res.status(400).json({ error: 'name, birthYear wajib diisi' });
     }
-    const sql = 'INSERT INTO directors (name, birthYear ) VALUES ($1, $2) RETURNING *';
+    const sql = 'INSERT INTO directors (name, "birthYear" ) VALUES ($1, $2) RETURNING *';
     try {
         const result = await db.query(sql, [name, birthYear]);
         res.status(201).json(result.rows[0]);
