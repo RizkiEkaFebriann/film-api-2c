@@ -127,6 +127,20 @@ app.post('/movies', authenticateToken, async (req, res, next) => {
     }
 });
 
+app.post('/directors', authenticateToken, async (req, res, next) => {
+    const { name, birthYear } = req.body;
+    if (!name || !birthYear) {
+        return res.status(400).json({ error: 'name, birthYear wajib diisi' });
+    }
+    const sql = 'INSERT INTO directors (name, birthYear ) VALUES ($1, $2) RETURNING *';
+    try {
+        const result = await db.query(sql, [name, birthYear]);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.put('/movies/:id', [authenticateToken, authorizeRole('admin')], async (req, res, next) => {
     const { title, director_id, year } = req.body;
     const sql = 'UPDATE movies SET title = $1, director_id = $2, year = $3 WHERE id = $4 RETURNING *';
