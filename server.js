@@ -127,7 +127,7 @@ app.get('/movies/:id', async (req, res, next) => {
 
 app.get('/directors/:id', async (req, res, next) => {
     const sql = `
-        SELECT * FROM directors WHERE id = ?
+        SELECT * FROM directors WHERE id = $1
     `;
     try {
         const result = await db.query(sql, [req.params.id]);
