@@ -182,6 +182,20 @@ app.put('/movies/:id', [authenticateToken, authorizeRole('admin')], async (req, 
     }
 });
 
+app.put('/directors/:id', [authenticateToken, authorizeRole('admin')], async (req, res, next) => {
+    const { name, birthYear } = req.body;
+    const sql = 'UPDATE directors SET name = $1, birthYear = $2 WHERE id = $3 RETURNING *';
+    try {
+        const result = await db.query(sql, [name, birthYear, req.params.id]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Film tidak ditemukan' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.delete('/movies/:id', [authenticateToken, authorizeRole('admin')], async (req, res, next) => {
     const sql = 'DELETE FROM movies WHERE id = $1 RETURNING *';
     try {
