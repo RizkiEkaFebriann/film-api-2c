@@ -95,6 +95,18 @@ app.get('/movies', async (req, res, next) => {
     }
 });
 
+app.get('/directors', async (req, res, next) => {
+    const sql = `
+        SELECT * FROM directors
+    `;
+    try {
+        const result = await db.query(sql);
+        res.json(result.rows);
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.get('/movies/:id', async (req, res, next) => {
     const sql = `
         SELECT m.id, m.title, m.year, d.id as director_id, d.name as director_name
