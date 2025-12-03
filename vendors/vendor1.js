@@ -1,0 +1,90 @@
+const express = require('express');
+const db = require('../db.js');
+const { authenticateToken, authorizeRole } = require('../middleware/auth.js');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+
+
+router.post('/auth/register', async (req, res, next) => {
+    const { username, password } = req.body;
+    if (!username || !password || password.length < 6) {
+        return res.status(400).json({ error: 'Username dan password (min 6 char) harus diisi' });
+    }
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const sql = 'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username';
+        const result = await db.query(sql, [username.toLowerCase(), hashedPassword, 'user']);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        if (err.code === '23505') {
+            return res.status(409).json({ error: 'Username sudah digunakan' });
+        }
+        next(err);
+    }
+});
+
+// GET ALL Vendor A
+router.get('/', async (req, res, next) => {
+    try {
+        const result = await db.query("SELECT * FROM vendor_a");
+        res.json(result.rows);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// GET by ID
+router.get('/:id', async (req, res, next) => {
+    try {
+        const result = await db.query("SELECT * FROM vendor_a WHERE id = $1", [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: "Data tidak ditemukan" });
+        res.json(result.rows[0]);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// CREATE
+router.post('/',authenticateToken, async (req, res, next) => {
+    const { kd_produk, nm_brg, hrg, ket_stok } = req.body;
+    try {
+        const sql = `
+            INSERT INTO vendor_a (kd_produk, nm_brg, hrg, ket_stok)
+            VALUES ($1, $2, $3, $4) RETURNING *
+        `;
+        const result = await db.query(sql, [kd_produk, nm_brg, hrg, ket_stok]);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// UPDATE
+router.put('/:id', async (req, res, next) => {
+    const { kd_produk, nm_brg, hrg, ket_stok } = req.body;
+    try {
+        const sql = `
+            UPDATE vendor_a SET kd_produk=$1, nm_brg=$2, hrg=$3, ket_stok=$4
+            WHERE id=$5 RETURNING *
+        `;
+        const result = await db.query(sql, [kd_produk, nm_brg, hrg, ket_stok, req.params.id]);
+        if (result.rowCount === 0) return res.status(404).json({ error: "Data tidak ditemukan" });
+        res.json(result.rows[0]);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// DELETE
+router.delete('/:id', async (req, res, next) => {
+    try {
+        const result = await db.query("DELETE FROM vendor_a WHERE id=$1 RETURNING *", [req.params.id]);
+        if (result.rowCount === 0) return res.status(404).json({ error: "Data tidak ditemukan" });
+        res.status(204).send();
+    } catch (err) {
+        next(err);
+    }
+});
+
+module.exports = router;
