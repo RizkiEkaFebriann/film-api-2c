@@ -1,12 +1,17 @@
 const express = require('express');
+const cors = require('cors');
 const db = require('../db.js');
 const router = express.Router();
 const { authenticateToken, authorizeRole } = require('../middleware/auth.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const app = express();
 const PORT = process.env.PORT || 3300;
 const JWT_SECRET = process.env.JWT_SECRET;
+
+app.use(cors());
+app.use(express.json());
 
 app.post('/auth/register', async (req, res, next) => {
     const { username, password } = req.body;
