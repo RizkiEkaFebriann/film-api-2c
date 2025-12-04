@@ -92,13 +92,13 @@ app.get('/:id', async (req, res, next) => {
 });
 
 app.post('/', async (req, res, next) => {
-    const { sku, product_name, price, is_available } = req.body;
+    const { sku, productName, price, isAvailable } = req.body;
     try {
         const sql = `
-            INSERT INTO vendor_b (sku, product_name, price, is_available)
+            INSERT INTO vendor_b (sku, productName, price, isAvailable)
             VALUES ($1, $2, $3, $4) RETURNING *
         `;
-        const result = await db.query(sql, [sku, product_name, price, is_available]);
+        const result = await db.query(sql, [sku, productName, price, isAvailable]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
         next(err);
@@ -106,13 +106,13 @@ app.post('/', async (req, res, next) => {
 });
 
 app.put('/:id',authenticateToken, async (req, res, next) => {
-    const { sku, product_name, price, is_available } = req.body;
+    const { sku, productName, price, isAvailable } = req.body;
     try {
         const sql = `
-            UPDATE vendor_b SET sku=$1, product_name=$2, price=$3, is_available=$4
+            UPDATE vendor_b SET sku=$1, productName=$2, price=$3, isAvailable=$4
             WHERE id=$5 RETURNING *
         `;
-        const result = await db.query(sql, [sku, product_name, price, is_available, req.params.id]);
+        const result = await db.query(sql, [sku, productName, price, isAvailable, req.params.id]);
         if (result.rowCount === 0) return res.status(404).json({ error: "Data tidak ditemukan" });
         res.json(result.rows[0]);
     } catch (err) {
